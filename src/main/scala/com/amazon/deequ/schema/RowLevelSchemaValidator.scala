@@ -857,11 +857,12 @@ object RowLevelSchemaValidator {
         }
 
       case containDef: ContainedInDefinition =>
-        val colname = col(containDef.name)
-        var expression = s"(${colname} IS NULL)"
+        val colnameAsStr = col(containDef.name).cast(StringType)
+        var expression = colIsNull
         for (value <- containDef.allowedValues) {
-          expression = expression.concat(s" OR(${colname} IN ('${value}') )")
+          expression = expression.or(colnameAsStr === (value))
         }
+        nextCnf = nextCnf.and(expression)
     }
     nextCnf
   }
